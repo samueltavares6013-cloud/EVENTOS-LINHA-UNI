@@ -1,0 +1,197 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CIS | Calendário de Eventos Linha 6-Laranja</title>
+    <link rel="stylesheet" href="./styles.css?v=20260721-publico-1" />
+  </head>
+  <body class="public-static-site">
+    <div class="app-shell">
+      <aside class="side-nav" aria-label="Navegação principal">
+        <button class="side-brand" id="adminAccess" type="button" aria-label="Centro de Inteligência e Segurança" disabled><img src="./assets/logo-cis.jpg" alt="Centro de Inteligência e Segurança" /></button>
+        <p class="side-section">Principal</p>
+        <button class="side-link active" type="button" data-view-target="calendarView"><span>▦</span><span data-edit-id="nav-calendar-label">Calendário</span></button>
+        <button class="side-link" id="navDashboard" type="button"><span>◈</span><span data-edit-id="nav-dashboard-label">Dashboard</span></button>
+        <button class="side-link hidden" id="navFieldReport" type="button"><span>▤</span><span>Relatório de campo</span></button>
+      </aside>
+      <div class="app-content">
+    <header class="app-header">
+      <div class="brand">
+        <div>
+          <p class="eyebrow" data-edit-id="brand-line">Linha 6-Laranja | Metrô de São Paulo</p>
+          <h1 data-edit-id="brand-title">Centro de Inteligência e Segurança</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="ghost-button hidden" id="toggleTextEdit" type="button">Editar textos</button>
+        <button class="ghost-button hidden" id="changeTextPassword" type="button">Alterar senha</button>
+        <button class="ghost-button hidden" id="openDashboard" type="button" data-edit-id="open-dashboard-label">Painel de impacto</button>
+        <button class="primary-button fit hidden" id="openEditor" type="button" data-edit-id="open-editor-label">Adicionar evento</button>
+      </div>
+    </header>
+    <main>
+      <section class="view-panel" id="fieldReportView">
+        <section class="field-report-shell field-report-screen" aria-labelledby="fieldReportTitle">
+          <div class="field-report-heading"><div><p class="eyebrow">Retorno operacional</p><h2 id="fieldReportTitle">Relatório de campo</h2><span>Registro realizado pelo supervisor após o evento</span></div><strong id="fieldReportStatus">Novo relatório</strong></div>
+          <form class="field-report-form" id="fieldReportForm">
+            <section class="field-report-section"><h3>Identificação do evento</h3><label>Evento monitorado<select name="eventoId" id="fieldReportEvent" required><option value="">Selecione um evento</option></select></label><div class="field-event-summary" id="fieldEventSummary">Selecione um evento para carregar data, local e estações.</div></section>
+            <section class="field-report-section"><h3>Responsável e operação</h3><div class="field-report-grid"><label>Supervisor responsável<input name="supervisor" required placeholder="Nome completo" /></label><label>Início da operação<input name="inicioOperacao" type="time" /></label><label>Término da operação<input name="terminoOperacao" type="time" /></label><label>Apoio operacional em campo<input name="apoioOperacional" type="number" min="0" step="1" placeholder="Quantidade de colaboradores" /></label><label>Equipe tática<select name="equipeTatica" required><option value="">Selecione</option><option value="SIM">Sim</option><option value="NÃO">Não</option></select></label></div></section>
+            <section class="field-report-section"><h3>Impacto constatado</h3><div class="field-report-grid"><label>Houve impacto?<select name="houveImpacto" id="fieldImpactOccurred" required><option value="">Selecione</option><option value="SIM">Sim</option><option value="NÃO">Não</option></select></label><label>Nível constatado<select name="nivelImpacto" id="fieldImpactLevel"><option value="SEM IMPACTO">Sem impacto</option><option value="BAIXO">Baixo</option><option value="MÉDIO">Médio</option><option value="ALTO">Alto</option></select></label><label>Tipo de impacto<select name="tipoImpacto" id="fieldImpactType"><option value="SEM IMPACTO">Sem impacto</option><option value="FLUXO">Fluxo de passageiros</option><option value="FILA">Formação de filas</option><option value="SEGURANÇA">Segurança</option><option value="TRÂNSITO">Trânsito no entorno</option><option value="OPERAÇÃO">Operação da estação</option><option value="OUTRO">Outro</option></select></label><label>Estações impactadas<input name="estacoesImpactadas" id="fieldImpactedStations" placeholder="Ex.: SEP, PDZ" /></label></div><label>Descrição e providências adotadas<textarea name="descricao" rows="5" required placeholder="Descreva o cenário observado e as ações realizadas"></textarea></label></section>
+            <div class="field-report-actions"><button class="primary-button" type="submit">Salvar relatório</button><button class="ghost-button" id="exportFieldReportPdf" type="button">Exportar PDF</button><button class="ghost-button" id="emailFieldReport" type="button">Enviar por e-mail</button></div>
+          </form>
+        </section>
+      </section>
+      <section class="view-panel active" id="calendarView">
+      <section class="calendar-shell" aria-label="Calendário de eventos">
+        <div class="calendar-title">
+          <div>
+            <p class="eyebrow" data-edit-id="calendar-eyebrow">Calendário operacional</p>
+            <h2 data-edit-id="calendar-title">Eventos monitorados</h2>
+          </div>
+        </div>
+        <div class="calendar-tools" aria-label="Filtros do calendário"><input id="searchInput" placeholder="Buscar evento, local ou estação" /><select id="impactFilter"><option value="">Todos os impactos</option><option class="impact-option-high" value="ALTO">Alto</option><option class="impact-option-medium" value="MÉDIO">Médio</option><option class="impact-option-low" value="BAIXO">Baixo</option></select><label><span>Data inicial</span><input id="calendarStart" type="date" value="2026-07-01" /></label><label><span>Data final</span><input id="calendarEnd" type="date" /></label><button class="calendar-clear" id="clearCalendarPeriod" type="button">Limpar período</button></div>
+        <div class="edit-notice" id="editNotice">Modo edição ativado. Clique nos textos para alterar; as mudanças são salvas automaticamente.</div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+      </section>
+      <section class="view-panel dashboard-page" id="dashboardView">
+        <div class="dashboard-hero"><div><p class="eyebrow" data-edit-id="dashboard-eyebrow">Central de inteligência operacional</p><h2 data-edit-id="dashboard-title">Linha 6-Laranja | Situação em tempo real</h2><span id="dashboardSubtitle">Base dinâmica alimentada pelo cadastro de eventos</span></div><div class="command-status"><span id="dashboardDate">--/--/----</span><span id="dashboardTime">--:--</span><strong><span id="dashboardEventCount">0</span> eventos monitorados</strong></div><details class="command-menu" id="dashboardActionsMenu"><summary>Opções</summary><div class="command-menu-list"><button id="refreshDashboard" type="button">Atualizar</button><button id="exportDashboardPdf" type="button">Exportar PDF</button></div></details></div>
+        <section class="dashboard-filters" aria-label="Filtros do dashboard"><input id="dashboardSearch" placeholder="Buscar evento, local, categoria ou estação" /><select id="dashboardCategory"><option value="">Todas as categorias</option></select><select id="dashboardStation"><option value="">Todas as estações</option></select><select id="dashboardImpact"><option value="">Todos os impactos</option><option value="ALTO">Alto</option><option value="MÉDIO">Médio</option><option value="BAIXO">Baixo</option></select></section>
+        <section class="kpi-grid" id="kpiGrid" aria-label="Indicadores operacionais"></section>
+        <section class="panel volume-analysis" aria-labelledby="volumeAnalysisTitle"><div class="volume-heading"><div><p class="eyebrow">Análise de volume</p><h3 id="volumeAnalysisTitle">Quantidade de eventos</h3></div><div class="volume-tabs" role="group" aria-label="Agrupar eventos por período"><button class="active" type="button" data-volume-mode="date" aria-pressed="true">Data</button><button type="button" data-volume-mode="weekday" aria-pressed="false">Dia da semana</button><button type="button" data-volume-mode="month" aria-pressed="false">Mês</button></div></div><div class="volume-summary" id="eventVolumeSummary"></div><div class="volume-chart-scroll"><div class="volume-chart" id="eventVolumeChart" aria-label="Gráfico de quantidade de eventos"></div></div></section>
+        <div class="dashboard-primary">
+          <div class="dashboard-support-grid">
+            <article class="panel"><div class="panel-title"><p class="eyebrow" data-edit-id="ranking-eyebrow">Prioridade operacional</p><h3 data-edit-id="ranking-title">Estações mais impactadas</h3></div><div class="station-ranking" id="stationRanking"></div></article>
+          </div>
+        </div>
+        <details class="operational-details"><summary><span><strong>Detalhes operacionais</strong><small>Heatmap e estações detalhadas</small></span><span class="details-toggle">Expandir</span></summary><div class="dashboard-grid details-grid"><article class="panel span-2"><div class="panel-title"><p class="eyebrow">Impacto por estação</p><h3>Detalhamento completo da Linha 6</h3></div><div class="station-coverage-summary" id="stationCoverageSummary"></div><div class="station-card-grid" id="stationImpactCards"></div></article><article class="panel span-2"><div class="panel-title"><p class="eyebrow" data-edit-id="heatmap-eyebrow">Análise secundária</p><h3 data-edit-id="heatmap-title">Concentração por horário</h3></div><div class="hour-heatmap" id="hourHeatmap"></div></article></div></details>
+      </section>
+    </main>
+      </div>
+    </div>
+    <section class="drawer" id="editorDrawer" aria-hidden="true">
+      <div class="drawer-backdrop" data-close="editor"></div>
+      <aside class="drawer-panel" aria-label="Edição de eventos">
+        <div class="drawer-header dashboard-command">
+          <div>
+            <p class="eyebrow" data-edit-id="event-editor-eyebrow">Edição</p>
+            <h2 id="eventEditorTitle" data-edit-id="event-editor-title">Adicionar evento</h2>
+          </div>
+          <button class="icon-button" data-close="editor" type="button" aria-label="Fechar">×</button>
+        </div>
+        <form id="eventForm">
+          <label><span data-edit-id="label-event-name">Nome do evento</span><input name="evento" required placeholder="Ex.: show, jogo, manifestação" /></label>
+          <div class="two-cols">
+            <label><span data-edit-id="label-date">Data</span><input id="eventDate" name="data" type="date" required /></label>
+            <label><span data-edit-id="label-weekday">Dia da semana</span><input id="eventWeekday" name="diaSemana" placeholder="Automático" readonly /></label>
+          </div>
+          <div class="two-cols">
+            <label><span data-edit-id="label-start">Início</span><input name="inicio" type="time" /></label>
+            <label><span data-edit-id="label-end">Término</span><input name="termino" placeholder="A DEFINIR" /></label>
+          </div>
+          <label><span data-edit-id="label-location">Local</span><input name="local" required placeholder="Ex.: NUBANK PARQUE" /></label>
+          <div class="two-cols">
+            <label><span data-edit-id="label-classification">Classificação</span><select name="classificacao"><option>SHOW</option><option>FUTEBOL</option><option>MANIFESTAÇÃO</option><option>EVENTO</option><option>OUTRO</option></select></label>
+            <label><span data-edit-id="label-impact">Impacto</span><select name="impacto"><option>ALTO</option><option>MÉDIO</option><option>BAIXO</option></select></label>
+          </div>
+          <label><span data-edit-id="label-stations">Estações envolvidas</span><input name="estacoes" placeholder="SEP, PDZ, HIG" /></label>
+          <label><span data-edit-id="label-audience">Público estimado</span><input name="publico" placeholder="Ex.: 35000 ou Não divulgado" /></label>
+          <div class="event-image-field">
+            <span>Imagem do evento</span>
+            <label class="file-button event-image-selector"><span>Selecionar imagem</span><input id="eventImageInput" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+            <small>JPG, PNG ou WebP. A imagem será otimizada antes de ser salva.</small>
+            <small class="event-image-status" id="eventImageStatus" aria-live="polite">Nenhuma imagem selecionada.</small>
+            <div class="event-image-preview hidden" id="eventImagePreview"><img id="eventImagePreviewImg" alt="Prévia da imagem do evento" /><button class="ghost-button wide" id="removeEventImage" type="button">Remover imagem</button></div>
+          </div>
+          <div class="two-cols">
+            <label><span data-edit-id="label-extended-operation">Operação estendida</span><select name="operacaoEstendida"><option>NÃO</option><option>SIM</option></select></label>
+            <label><span data-edit-id="label-local-duty">Plantão local</span><select name="plantaoLocal"><option>NÃO</option><option>SIM</option></select></label>
+          </div>
+          <button class="primary-button" id="eventSubmitButton" type="submit" data-edit-id="save-event-label">Salvar evento</button>
+          <button class="danger-button wide hidden" id="deleteEventButton" type="button">Excluir evento</button>
+          <button class="ghost-button wide" id="resetData" type="button" data-edit-id="reset-data-label">Restaurar planilha original</button>
+        </form>
+        <div class="drawer-actions">
+          <button class="ghost-button" id="exportJson" type="button" data-edit-id="export-data-label">Exportar Dashboard PDF</button>
+          <label class="file-button"><span data-edit-id="import-data-label">Importar JSON</span><input id="importJson" type="file" accept="application/json" /></label>
+        </div>
+      </aside>
+    </section>
+    <section class="drawer" id="editEventsDrawer" aria-hidden="true">
+      <div class="drawer-backdrop" data-close="edit-events"></div>
+      <aside class="drawer-panel edit-events-panel" aria-label="Seleção de evento para edição">
+        <div class="drawer-header">
+          <div>
+            <p class="eyebrow">Edição de eventos</p>
+            <h2>Selecione um evento</h2>
+          </div>
+          <button class="icon-button" data-close="edit-events" type="button" aria-label="Fechar">×</button>
+        </div>
+        <label class="edit-event-search">Buscar evento, local ou data<input id="editEventSearch" placeholder="Digite para localizar" /></label>
+        <div class="edit-event-list" id="editEventList"></div>
+      </aside>
+    </section>
+    <section class="drawer" id="adminDrawer" aria-hidden="true">
+      <div class="drawer-backdrop" data-close="admin"></div>
+      <aside class="drawer-panel admin-panel" aria-label="Acesso restrito">
+        <div class="drawer-header">
+          <div>
+            <p class="eyebrow">Acesso restrito</p>
+            <h2>Administração</h2>
+          </div>
+          <button class="icon-button" data-close="admin" type="button" aria-label="Fechar">×</button>
+        </div>
+        <div class="admin-actions">
+          <button class="primary-button" id="adminOpenEditor" type="button">Adicionar evento</button>
+          <button class="ghost-button wide" id="adminEditEvents" type="button">Editar eventos</button>
+          <button class="ghost-button wide" id="adminExportBackup" type="button">Exportar backup completo</button>
+          <button class="ghost-button wide" id="adminToggleTextEdit" type="button">Editar textos</button>
+          <button class="ghost-button wide" id="adminChangePassword" type="button">Alterar senha</button>
+        </div>
+      </aside>
+    </section>
+    <section class="password-modal" id="passwordModal" aria-hidden="true">
+      <div class="password-backdrop" data-password-close="true"></div>
+      <form class="password-panel" id="passwordForm">
+        <div class="drawer-header">
+          <div>
+            <p class="eyebrow" id="passwordEyebrow">Senha</p>
+            <h2 id="passwordTitle">Editar textos</h2>
+          </div>
+          <button class="icon-button" id="closePasswordModal" type="button" aria-label="Fechar">×</button>
+        </div>
+        <label id="currentPasswordLabel">Senha<input id="currentPassword" type="password" autocomplete="current-password" /></label>
+        <label class="hidden" id="newPasswordLabel">Nova senha<input id="newPassword" type="password" autocomplete="new-password" /></label>
+        <p class="password-error" id="passwordError"></p>
+        <button class="primary-button" type="submit" id="passwordSubmit">Entrar</button>
+        <button class="ghost-button wide hidden" id="openAccessRequest" type="button">Solicitar acesso</button>
+      </form>
+      <form class="password-panel hidden" id="accessRequestForm">
+        <div class="drawer-header"><div><p class="eyebrow">Acesso ao relatório</p><h2>Solicitar acesso</h2></div><button class="icon-button" id="closeAccessRequest" type="button" aria-label="Fechar">×</button></div>
+        <label>E-mail corporativo<input id="requestCorporateEmail" type="email" autocomplete="email" placeholder="nome@empresa.com.br" required /></label>
+        <label>Cargo<input id="requestJobTitle" type="text" autocomplete="organization-title" placeholder="Informe seu cargo" required /></label>
+        <div class="access-request-actions"><button class="ghost-button" id="backToPassword" type="button">Voltar</button><button class="primary-button" type="submit">Enviar solicitação</button></div>
+      </form>
+    </section>
+    <section class="image-modal" id="eventImageModal" aria-hidden="true">
+      <button class="image-modal-backdrop" type="button" data-image-close="true" aria-label="Fechar imagem"></button>
+      <div class="image-modal-panel" role="dialog" aria-modal="true" aria-labelledby="eventImageModalTitle">
+        <div class="image-modal-header"><h2 id="eventImageModalTitle">Imagem do evento</h2><button class="icon-button" id="closeEventImageModal" type="button" aria-label="Fechar">×</button></div>
+        <img id="eventImageModalImg" alt="" />
+      </div>
+    </section>
+    <section class="password-modal" id="reportRecipientModal" aria-hidden="true">
+      <div class="password-backdrop" data-recipient-close="true"></div>
+      <form class="password-panel" id="reportRecipientForm">
+        <div class="drawer-header"><div><p class="eyebrow">Envio protegido</p><h2>Destinatário do relatório</h2></div><button class="icon-button" id="closeReportRecipient" type="button" aria-label="Fechar">×</button></div>
+        <label>E-mail corporativo<input id="reportRecipientEmail" type="email" autocomplete="email" placeholder="nome@linhauni.com.br" required /></label>
+        <p class="recipient-hint">Permitido somente e-mail terminado em @linhauni.com.br.</p>
+        <p class="password-error" id="reportRecipientError"></p>
+        <button class="primary-button" type="submit">Salvar e enviar PDF</button>
+      </form>
+    </section>
+    <script src="./assets/events-data.js?v=20260721-capas"></script>
+    <script src="./app.js?v=20260721-publico-1"></script>
+  </body>
+</html>
