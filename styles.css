@@ -193,7 +193,7 @@ select {
 .icon-button {
   width: 42px;
   padding: 0;
-  color: var(--orange);
+  color: #000000;
   background: var(--white);
   font-size: 1.35rem;
 }
@@ -824,7 +824,7 @@ body.image-modal-open {
   font-size: 1.1rem;
 }
 .image-modal-header .icon-button {
-  color: var(--navy);
+  color: #000000;
   background: var(--white);
 }
 .event-detail-body {
@@ -1686,28 +1686,78 @@ body.image-modal-open {
   background: #f7f9fc;
 }
 .hour-heatmap {
+  margin-top: 18px;
+}
+.hour-volume-summary {
   display: grid;
-  grid-template-columns: 72px repeat(var(--heatmap-hours, 2), minmax(100px, 1fr));
-  gap: 5px;
-  margin-top: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f7f9fc;
+}
+.hour-volume-summary div {
+  padding: 14px 16px;
+  border-left: 1px solid var(--line);
+}
+.hour-volume-summary div:first-child {
+  border-left: 0;
+}
+.hour-volume-summary span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.hour-volume-summary strong {
+  color: var(--navy);
+  font-size: 1.1rem;
+}
+.hour-volume-chart {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+.hour-volume-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 94px;
+  gap: 12px;
   align-items: center;
 }
-.hour-heatmap strong {
+.hour-volume-row > strong,
+.hour-volume-row > span {
   color: var(--navy);
   font-size: 0.78rem;
+  font-weight: 700;
 }
-.hour-heatmap span {
-  display: block;
-  min-height: 26px;
+.hour-volume-row > span {
+  text-align: right;
+}
+.hour-volume-track {
+  height: 24px;
+  overflow: hidden;
   border-radius: 5px;
   background: #e2e8f0;
 }
-.hour-heatmap span b {
+.hour-volume-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--navy-3);
+}
+.hour-empty-state {
   display: grid;
-  place-items: center;
-  min-height: 26px;
+  justify-items: center;
+  gap: 5px;
+  padding: 32px 18px;
+  color: var(--muted);
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  background: #f8fafc;
+}
+.hour-empty-state strong {
   color: var(--navy);
-  font-size: 0.78rem;
 }
 .hour-impact-panel {
   margin-top: 18px;
@@ -1720,7 +1770,7 @@ body.image-modal-open {
 }
 .hour-compare-filters {
   display: grid;
-  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
   gap: 12px;
 }
 .hour-compare-filters label {
@@ -2411,6 +2461,20 @@ body.image-modal-open {
   }
   .hour-compare-filters {
     grid-template-columns: 1fr;
+  }
+  .hour-volume-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hour-volume-summary div:nth-child(3) {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .hour-volume-summary div:nth-child(4) {
+    border-top: 1px solid var(--line);
+  }
+  .hour-volume-row {
+    grid-template-columns: 42px minmax(0, 1fr) 76px;
+    gap: 8px;
   }
   .calendar-tools input,
   .calendar-tools select,

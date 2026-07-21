@@ -662,21 +662,21 @@ function renderHourHeatmap(source) {
   if (stationSelect && stationSelect.options.length === 1) stationSelect.insertAdjacentHTML("beforeend", lineStations.map((station) => `<option value="${station.code}">${station.code} | ${station.name}</option>`).join(""));
   const selectedDate = document.querySelector("#compareDate")?.value || "";
   const selectedStation = stationSelect?.value || "";
-  const selectedHours = [...new Set([document.querySelector("#compareHourA")?.value || "18h", document.querySelector("#compareHourB")?.value || "20h"])];
   const filteredSource = source.filter((event) => (!selectedDate || event.data === selectedDate) && (!selectedStation || (event.estacoes || []).map(normalizeStationCode).includes(selectedStation)));
-  const data = lineImpactData(filteredSource).filter((station) => !selectedStation || station.code === selectedStation).map((station) => ({ ...station, hours: dashboardHours.reduce((acc, hour) => ({ ...acc, [hour]: 0 }), {}) }));
-  filteredSource.forEach((event) => {
-    const hour = eventHourSlot(event);
-    (event.estacoes || []).map(normalizeStationCode).forEach((code) => {
-      const station = data.find((item) => item.code === code);
-      if (station) station.hours[hour] += impactWeight[displayImpact(event.impacto)] || 1;
-    });
-  });
-  const max = Math.max(1, ...data.flatMap((item) => Object.values(item.hours)));
+  const counts = dashboardHours.reduce((acc, hour) => ({ ...acc, [hour]: 0 }), {});
+  filteredSource.forEach((event) => counts[eventHourSlot(event)] += 1);
+  const activeHours = dashboardHours.map((hour) => ({ hour, total: counts[hour] })).filter((item) => item.total > 0);
   const status = document.querySelector("#hourCompareStatus");
-  if (status) status.textContent = `${selectedDate ? formatDate(selectedDate) : "Todos os dias"} | ${selectedStation || "Todas as estações"} | ${filteredSource.length} eventos considerados`;
-  target.style.setProperty("--heatmap-hours", selectedHours.length);
-  target.innerHTML = `<div class="heatmap-head"></div>${selectedHours.map((hour) => `<strong>${hour}</strong>`).join("")}${data.map((station) => `<strong>${station.code}</strong>${selectedHours.map((hour) => `<span class="heat-level-${Math.ceil((station.hours[hour] / max) * 4)}" title="${station.name} | ${hour} | ${station.hours[hour]} pontos"><b>${station.hours[hour]}</b></span>`).join("")}`).join("")}`;
+  const stationName = selectedStation ? `${selectedStation} | ${lineStations.find((station) => station.code === selectedStation)?.name || selectedStation}` : "Todas as estações";
+  if (status) status.textContent = `${selectedDate ? formatDate(selectedDate) : "Todos os dias"} | ${stationName}`;
+  if (!activeHours.length) {
+    target.innerHTML = `<div class="hour-empty-state"><strong>Nenhum evento encontrado</strong><span>Não há eventos para a data e a estação selecionadas.</span></div>`;
+    return;
+  }
+  const max = Math.max(...activeHours.map((item) => item.total));
+  const min = Math.min(...activeHours.map((item) => item.total));
+  const peak = activeHours.find((item) => item.total === max);
+  target.innerHTML = `<div class="hour-volume-summary"><div><span>Total do dia</span><strong>${formatAudience(filteredSource.length)}</strong></div><div><span>Maior volume</span><strong>${peak.hour}</strong></div><div><span>Horários ativos</span><strong>${activeHours.length}</strong></div><div><span>Diferença</span><strong>${formatAudience(max - min)}</strong></div></div><div class="hour-volume-chart">${activeHours.map((item) => `<div class="hour-volume-row"><strong>${item.hour}</strong><div class="hour-volume-track"><i style="width:${Math.max(8, (item.total / max) * 100)}%"></i></div><span>${item.total} ${item.total === 1 ? "evento" : "eventos"}</span></div>`).join("")}</div>`;
 }
 function renderEventDistribution(source) {
   const legend = document.querySelector("#eventDistribution");
@@ -1356,7 +1356,7 @@ document.querySelectorAll("[data-volume-mode]").forEach((button) => button.addEv
   renderEventVolume(getDashboardEvents());
 }));
 ["#dashboardSearch", "#dashboardCategory", "#dashboardStation", "#dashboardImpact"].forEach((selector) => document.querySelector(selector).addEventListener("input", render));
-["#compareDate", "#compareStation", "#compareHourA", "#compareHourB"].forEach((selector) => document.querySelector(selector).addEventListener("change", () => renderHourHeatmap(getDashboardEvents())));
+["#compareDate", "#compareStation"].forEach((selector) => document.querySelector(selector).addEventListener("change", () => renderHourHeatmap(getDashboardEvents())));
 document.querySelector("#importJson").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
