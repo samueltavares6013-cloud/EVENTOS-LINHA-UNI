@@ -884,6 +884,10 @@ body.image-modal-open {
   pointer-events: none;
   opacity: 0.5;
 }
+.event-detail-link.hidden,
+.event-detail-media.hidden {
+  display: none;
+}
 .edit-events-panel {
   width: min(620px, 100%);
 }
@@ -1715,16 +1719,18 @@ body.image-modal-open {
   gap: 20px;
 }
 .hour-compare-filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
   gap: 12px;
 }
 .hour-compare-filters label {
-  min-width: 130px;
+  min-width: 0;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
 }
-.hour-compare-filters select {
+.hour-compare-filters select,
+.hour-compare-filters input {
   display: block;
   width: 100%;
   margin-top: 5px;
@@ -1733,6 +1739,12 @@ body.image-modal-open {
   border-radius: 6px;
   color: var(--navy);
   background: var(--white);
+}
+.hour-compare-status {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 .heat-level-1 {
   background: #cbd5e1 !important;
@@ -2393,13 +2405,12 @@ body.image-modal-open {
   .event-detail-media {
     min-height: 180px;
   }
-  .hour-impact-heading,
-  .hour-compare-filters {
+  .hour-impact-heading {
     align-items: stretch;
     flex-direction: column;
   }
-  .hour-compare-filters label {
-    min-width: 0;
+  .hour-compare-filters {
+    grid-template-columns: 1fr;
   }
   .calendar-tools input,
   .calendar-tools select,

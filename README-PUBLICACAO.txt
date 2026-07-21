@@ -17,3 +17,4 @@ Esta versão não possui backend nem banco de dados compartilhado.
 As funções de consulta, filtros, calendário, dashboard, relatório de campo, capas, administração local e exportação de PDF funcionam no navegador.
 Alterações administrativas ficam salvas somente no navegador em que foram realizadas e não modificam o site dos outros usuários.
 Na V3, os cards abrem detalhes com Google Maps e link externo, o dashboard compara horários e os meses aparecem por sigla.
+Na V4, o gráfico mensal mostra mês/ano, a comparação cruza dia, estação e horários, e os links do Maps e do evento podem ser administrados.
