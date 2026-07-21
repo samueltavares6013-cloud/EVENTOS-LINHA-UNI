@@ -64,7 +64,6 @@ function hasActiveAdminSession() {
   return false;
 }
 function requestAdminAccess() {
-  if (PUBLIC_STATIC_MODE) return;
   if (hasActiveAdminSession()) {
     openDrawer("#adminDrawer");
     return;
@@ -72,7 +71,6 @@ function requestAdminAccess() {
   openPasswordModal("admin");
 }
 function requestFieldReportAccess() {
-  if (PUBLIC_STATIC_MODE) return;
   const reportButton = document.querySelector("#navFieldReport");
   if (hasActiveAdminSession()) {
     showView("fieldReportView", reportButton);
@@ -88,7 +86,6 @@ function impactClass(value) {
   return "";
 }
 function loadTextOverrides() {
-  if (PUBLIC_STATIC_MODE) return {};
   try {
     const saved = JSON.parse(localStorage.getItem(TEXT_STORAGE_KEY) || "{}");
     return saved && typeof saved === "object" ? saved : {};
@@ -165,7 +162,6 @@ function saveEvents() {
   }
 }
 function loadEvents() {
-  if (PUBLIC_STATIC_MODE) return structuredClone(baseEvents).filter(isEventInScope);
   const saved = localStorage.getItem(STORAGE_KEY);
   const savedVersion = localStorage.getItem(DATA_VERSION_STORAGE_KEY);
   if (!saved || savedVersion !== DATA_VERSION) return structuredClone(baseEvents).filter(isEventInScope);
@@ -500,8 +496,8 @@ function renderEventCard(event) {
   const titleClass = String(event.evento || "").length > 26 ? " event-title-long" : "";
   const eventDate = parseDate(event.data);
   const shortMonth = eventDate ? eventDate.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "").toUpperCase() : "";
-  const visual = event.imagem ? `<button class="event-image-button" type="button" data-event-image="${event.id}" aria-label="Ampliar imagem de ${event.evento || "evento"}"><img src="${event.imagem}" alt="" /></button>` : `<div class="event-image-placeholder" aria-hidden="true"><img src="./assets/logo-cis.jpg" alt="" /><span>Centro de Inteligência e Segurança</span></div>`;
-  return `<article class="event-card ${impactTone}${event.imagem ? " has-image" : ""}" data-event-card="${event.id}"><div class="event-visual">${visual}<span class="event-category" data-event-id="${event.id}" data-event-field="classificacao">${category}</span></div><div class="event-card-footer"><div class="date-box"><div><strong>${dayNumber(event.data)}</strong><span>${shortMonth}</span><small data-event-id="${event.id}" data-event-field="diaSemana">${weekday(event.data, event.diaSemana)}</small></div></div><div class="event-card-content"><h3 class="${titleClass.trim()}" data-event-id="${event.id}" data-event-field="evento">${event.evento || "Evento sem nome"}</h3><p class="event-location" data-event-id="${event.id}" data-event-field="local">${event.local || "Local não informado"}</p><p class="event-schedule"><span>${formatDate(event.data)}</span> | <span data-event-id="${event.id}" data-event-field="inicio">${event.inicio || "A definir"}</span> - <span data-event-id="${event.id}" data-event-field="termino">${event.termino || "A definir"}</span></p><div class="event-meta"><span class="badge ${impactTone}${high}" data-event-id="${event.id}" data-event-field="impacto">${impact}</span><span class="badge" data-event-id="${event.id}" data-event-field="estacoes">${stations}</span><span class="badge" data-event-id="${event.id}" data-event-field="publico">${formatEventAudience(event)}</span></div></div></div></article>`;
+  const visual = event.imagem ? `<button class="event-image-button" type="button" data-event-image="${event.id}" aria-label="Ver detalhes de ${event.evento || "evento"}"><img src="${event.imagem}" alt="" /></button>` : `<div class="event-image-placeholder" aria-hidden="true"><img src="./assets/logo-cis.jpg" alt="" /><span>Centro de Inteligência e Segurança</span></div>`;
+  return `<article class="event-card ${impactTone}${event.imagem ? " has-image" : ""}" data-event-card="${event.id}" tabindex="0" role="button" aria-label="Ver detalhes de ${event.evento || "evento"}"><div class="event-visual">${visual}<span class="event-category" data-event-id="${event.id}" data-event-field="classificacao">${category}</span></div><div class="event-card-footer"><div class="date-box"><div><strong>${dayNumber(event.data)}</strong><span>${shortMonth}</span><small data-event-id="${event.id}" data-event-field="diaSemana">${weekday(event.data, event.diaSemana)}</small></div></div><div class="event-card-content"><h3 class="${titleClass.trim()}" data-event-id="${event.id}" data-event-field="evento">${event.evento || "Evento sem nome"}</h3><p class="event-location" data-event-id="${event.id}" data-event-field="local">${event.local || "Local não informado"}</p><p class="event-schedule"><span>${formatDate(event.data)}</span> | <span data-event-id="${event.id}" data-event-field="inicio">${event.inicio || "A definir"}</span> - <span data-event-id="${event.id}" data-event-field="termino">${event.termino || "A definir"}</span></p><div class="event-meta"><span class="badge ${impactTone}${high}" data-event-id="${event.id}" data-event-field="impacto">${impact}</span><span class="badge" data-event-id="${event.id}" data-event-field="estacoes">${stations}</span><span class="badge" data-event-id="${event.id}" data-event-field="publico">${formatEventAudience(event)}</span></div></div></div></article>`;
 }
 function updateSummary(source) {
   const highImpact = source.filter((event) => normalizeText(event.impacto) === "ALTO").length;
@@ -662,6 +658,7 @@ function filterCalendarByStation(station) {
 function renderHourHeatmap(source) {
   const target = document.querySelector("#hourHeatmap");
   if (!target) return;
+  const selectedHours = [...new Set([document.querySelector("#compareHourA")?.value || "18h", document.querySelector("#compareHourB")?.value || "20h"])];
   const data = lineImpactData(source).map((station) => ({ ...station, hours: dashboardHours.reduce((acc, hour) => ({ ...acc, [hour]: 0 }), {}) }));
   source.forEach((event) => {
     const hour = eventHourSlot(event);
@@ -671,7 +668,8 @@ function renderHourHeatmap(source) {
     });
   });
   const max = Math.max(1, ...data.flatMap((item) => Object.values(item.hours)));
-  target.innerHTML = `<div class="heatmap-head"></div>${dashboardHours.map((hour) => `<strong>${hour}</strong>`).join("")}${data.map((station) => `<strong>${station.code}</strong>${dashboardHours.map((hour) => `<span class="heat-level-${Math.ceil((station.hours[hour] / max) * 4)}" title="${station.name} | ${hour} | ${station.hours[hour]} pontos"></span>`).join("")}`).join("")}`;
+  target.style.setProperty("--heatmap-hours", selectedHours.length);
+  target.innerHTML = `<div class="heatmap-head"></div>${selectedHours.map((hour) => `<strong>${hour}</strong>`).join("")}${data.map((station) => `<strong>${station.code}</strong>${selectedHours.map((hour) => `<span class="heat-level-${Math.ceil((station.hours[hour] / max) * 4)}" title="${station.name} | ${hour} | ${station.hours[hour]} pontos"><b>${station.hours[hour]}</b></span>`).join("")}`).join("")}`;
 }
 function renderEventDistribution(source) {
   const legend = document.querySelector("#eventDistribution");
@@ -728,7 +726,7 @@ function volumeData(source, mode) {
     if (mode === "month") {
       key = monthKey(event.data);
       label = monthLabel(event.data);
-      shortLabel = `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getFullYear()).slice(-2)}`;
+      shortLabel = date.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "").toUpperCase();
     }
     const current = grouped.get(key) || { key, label, shortLabel, total: 0 };
     current.total += 1;
@@ -892,21 +890,22 @@ function optimizeEventImage(file) {
   });
 }
 function fitEventImageModal() {
-  const image = document.querySelector("#eventImageModalImg");
-  const panel = document.querySelector(".image-modal-panel");
-  if (!image.naturalWidth || !image.naturalHeight) return;
-  const maxImageHeight = Math.max(240, window.innerHeight - 116);
-  const maxImageWidth = Math.max(240, window.innerWidth - 60);
-  const proportionalWidth = maxImageHeight * (image.naturalWidth / image.naturalHeight);
-  const imageWidth = Math.min(image.naturalWidth, maxImageWidth, proportionalWidth);
-  panel.style.width = `${Math.max(280, Math.round(imageWidth + 28))}px`;
+  document.querySelector(".image-modal-panel").style.removeProperty("width");
 }
 function openEventImageModal(event) {
   const modal = document.querySelector("#eventImageModal");
-  document.querySelector("#eventImageModalTitle").textContent = event.evento || "Imagem do evento";
+  document.querySelector("#eventImageModalTitle").textContent = event.evento || "Evento";
   const image = document.querySelector("#eventImageModalImg");
-  image.onload = fitEventImageModal;
-  image.src = event.imagem;
+  const media = document.querySelector(".event-detail-media");
+  media.classList.toggle("hidden", !event.imagem);
+  if (event.imagem) image.src = event.imagem;
+  else image.removeAttribute("src");
+  document.querySelector("#eventDetailSchedule").textContent = `${formatDate(event.data)} | ${event.inicio || "A definir"} - ${event.termino || "A definir"}`;
+  document.querySelector("#eventDetailLocation").textContent = event.local || "Local não informado";
+  document.querySelector("#eventDetailBadges").innerHTML = `<span class="badge ${impactClass(event.impacto)}">${displayImpact(event.impacto)}</span><span class="badge">${(event.estacoes || []).join(", ") || "Sem estação"}</span><span class="badge">${formatEventAudience(event)}</span>`;
+  document.querySelector("#eventGoogleMaps").href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.local || event.evento || "")}`;
+  document.querySelector("#eventExternalLink").value = event.link || "";
+  updateEventExternalLink();
   document.body.classList.add("image-modal-open");
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
@@ -918,6 +917,25 @@ function closeEventImageModal() {
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden", "true");
   document.querySelector("#eventImageModalImg").removeAttribute("src");
+}
+function normalizeExternalUrl(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const candidate = /^https?:\/\//i.test(text) ? text : `https://${text}`;
+  try {
+    const url = new URL(candidate);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+function updateEventExternalLink() {
+  const target = document.querySelector("#openEventExternalLink");
+  const url = normalizeExternalUrl(document.querySelector("#eventExternalLink")?.value);
+  target.classList.toggle("disabled", !url);
+  target.setAttribute("aria-disabled", String(!url));
+  if (url) target.href = url;
+  else target.removeAttribute("href");
 }
 function setEventFormMode(eventToEdit = null) {
   const form = document.querySelector("#eventForm");
@@ -944,6 +962,7 @@ function setEventFormMode(eventToEdit = null) {
   ensureSelectValue(form.elements.impacto, displayImpact(eventToEdit.impacto) || "BAIXO");
   form.elements.estacoes.value = (eventToEdit.estacoes || []).map(normalizeStationCode).join(", ");
   form.elements.publico.value = isAudienceUndisclosed(eventToEdit) ? "NÃO DIVULGADO" : String(eventToEdit.publico || "");
+  form.elements.link.value = eventToEdit.link || "";
   ensureSelectValue(form.elements.operacaoEstendida, displayYesNo(eventToEdit.operacaoEstendida));
   ensureSelectValue(form.elements.plantaoLocal, displayYesNo(eventToEdit.plantaoLocal));
   syncEventWeekday();
@@ -1060,7 +1079,7 @@ document.querySelector("#adminAccess").addEventListener("click", () => {
   requestAdminAccess();
 });
 document.addEventListener("keydown", (event) => {
-  if (!PUBLIC_STATIC_MODE && event.ctrlKey && event.altKey && normalizeText(event.key) === "C") requestAdminAccess();
+  if (event.ctrlKey && event.altKey && normalizeText(event.key) === "C") requestAdminAccess();
 });
 document.querySelector("#closePasswordModal").addEventListener("click", closePasswordModal);
 document.querySelector("[data-password-close]").addEventListener("click", closePasswordModal);
@@ -1256,13 +1275,22 @@ document.querySelector("#deleteEventButton").addEventListener("click", () => {
   render();
 });
 document.querySelector("#calendarGrid").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-event-image]");
-  if (!button) return;
-  const selectedEvent = events.find((item) => String(item.id) === String(button.dataset.eventImage));
-  if (selectedEvent?.imagem) openEventImageModal(selectedEvent);
+  const card = event.target.closest("[data-event-card]");
+  if (!card || textEditEnabled) return;
+  const selectedEvent = events.find((item) => String(item.id) === String(card.dataset.eventCard));
+  if (selectedEvent) openEventImageModal(selectedEvent);
+});
+document.querySelector("#calendarGrid").addEventListener("keydown", (event) => {
+  if (!['Enter', ' '].includes(event.key) || textEditEnabled) return;
+  const card = event.target.closest("[data-event-card]");
+  if (!card) return;
+  event.preventDefault();
+  const selectedEvent = events.find((item) => String(item.id) === String(card.dataset.eventCard));
+  if (selectedEvent) openEventImageModal(selectedEvent);
 });
 document.querySelector("#closeEventImageModal").addEventListener("click", closeEventImageModal);
 document.querySelector("[data-image-close]").addEventListener("click", closeEventImageModal);
+document.querySelector("#eventExternalLink").addEventListener("input", updateEventExternalLink);
 window.addEventListener("resize", () => {
   if (document.querySelector("#eventImageModal").classList.contains("open")) fitEventImageModal();
 });
@@ -1277,7 +1305,7 @@ document.querySelector("#eventForm").addEventListener("submit", async (event) =>
   }
   const rawAudience = String(form.get("publico") || "").trim();
   const publicoNaoDivulgado = normalizeText(rawAudience).includes("NAO DIVULGADO");
-  const record = { id: editingEventId ?? Date.now(), mes: monthName(dateValue), data: dateValue, inicio: normalizeText(form.get("inicio")), termino: normalizeText(form.get("termino")) || "A DEFINIR", diaSemana: weekday(dateValue), classificacao: normalizeText(form.get("classificacao")), evento: normalizeText(form.get("evento")), local: normalizeText(form.get("local")), impacto: displayImpact(form.get("impacto")), estacoes: String(form.get("estacoes") || "").split(/[,;/]/).map((item) => normalizeText(item)).filter(Boolean), publico: publicoNaoDivulgado ? 0 : Number(rawAudience.replace(/\D/g, "")) || 0, publicoNaoDivulgado, imagem: pendingEventImage, operacaoEstendida: displayYesNo(form.get("operacaoEstendida")), plantaoLocal: displayYesNo(form.get("plantaoLocal")) };
+  const record = { id: editingEventId ?? Date.now(), mes: monthName(dateValue), data: dateValue, inicio: normalizeText(form.get("inicio")), termino: normalizeText(form.get("termino")) || "A DEFINIR", diaSemana: weekday(dateValue), classificacao: normalizeText(form.get("classificacao")), evento: normalizeText(form.get("evento")), local: normalizeText(form.get("local")), impacto: displayImpact(form.get("impacto")), estacoes: String(form.get("estacoes") || "").split(/[,;/]/).map((item) => normalizeText(item)).filter(Boolean), publico: publicoNaoDivulgado ? 0 : Number(rawAudience.replace(/\D/g, "")) || 0, publicoNaoDivulgado, imagem: pendingEventImage, link: normalizeExternalUrl(form.get("link")), operacaoEstendida: displayYesNo(form.get("operacaoEstendida")), plantaoLocal: displayYesNo(form.get("plantaoLocal")) };
   const eventsBeforeSave = [...events];
   const editingIndex = editingEventId === null ? -1 : events.findIndex((item) => String(item.id) === String(editingEventId));
   if (editingIndex >= 0) events[editingIndex] = { ...events[editingIndex], ...record, id: events[editingIndex].id };
@@ -1325,6 +1353,7 @@ document.querySelectorAll("[data-volume-mode]").forEach((button) => button.addEv
   renderEventVolume(getDashboardEvents());
 }));
 ["#dashboardSearch", "#dashboardCategory", "#dashboardStation", "#dashboardImpact"].forEach((selector) => document.querySelector(selector).addEventListener("input", render));
+["#compareHourA", "#compareHourB"].forEach((selector) => document.querySelector(selector).addEventListener("change", () => renderHourHeatmap(getDashboardEvents())));
 document.querySelector("#importJson").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;

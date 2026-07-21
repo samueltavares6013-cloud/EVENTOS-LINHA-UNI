@@ -4,16 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CIS | Calendário de Eventos Linha 6-Laranja</title>
-    <link rel="stylesheet" href="./styles.css?v=20260721-publico-1" />
+    <link rel="stylesheet" href="./styles.css?v=20260721-publico-3" />
   </head>
   <body class="public-static-site">
     <div class="app-shell">
       <aside class="side-nav" aria-label="Navegação principal">
-        <button class="side-brand" id="adminAccess" type="button" aria-label="Centro de Inteligência e Segurança" disabled><img src="./assets/logo-cis.jpg" alt="Centro de Inteligência e Segurança" /></button>
+        <button class="side-brand" id="adminAccess" type="button" aria-label="Acesso restrito"><img src="./assets/logo-cis.jpg" alt="Centro de Inteligência e Segurança" /></button>
         <p class="side-section">Principal</p>
         <button class="side-link active" type="button" data-view-target="calendarView"><span>▦</span><span data-edit-id="nav-calendar-label">Calendário</span></button>
         <button class="side-link" id="navDashboard" type="button"><span>◈</span><span data-edit-id="nav-dashboard-label">Dashboard</span></button>
-        <button class="side-link hidden" id="navFieldReport" type="button"><span>▤</span><span>Relatório de campo</span></button>
+        <button class="side-link" id="navFieldReport" type="button"><span>▤</span><span>Relatório de campo</span></button>
       </aside>
       <div class="app-content">
     <header class="app-header">
@@ -65,7 +65,7 @@
             <article class="panel"><div class="panel-title"><p class="eyebrow" data-edit-id="ranking-eyebrow">Prioridade operacional</p><h3 data-edit-id="ranking-title">Estações mais impactadas</h3></div><div class="station-ranking" id="stationRanking"></div></article>
           </div>
         </div>
-        <details class="operational-details"><summary><span><strong>Detalhes operacionais</strong><small>Heatmap e estações detalhadas</small></span><span class="details-toggle">Expandir</span></summary><div class="dashboard-grid details-grid"><article class="panel span-2"><div class="panel-title"><p class="eyebrow">Impacto por estação</p><h3>Detalhamento completo da Linha 6</h3></div><div class="station-coverage-summary" id="stationCoverageSummary"></div><div class="station-card-grid" id="stationImpactCards"></div></article><article class="panel span-2"><div class="panel-title"><p class="eyebrow" data-edit-id="heatmap-eyebrow">Análise secundária</p><h3 data-edit-id="heatmap-title">Concentração por horário</h3></div><div class="hour-heatmap" id="hourHeatmap"></div></article></div></details>
+        <details class="operational-details"><summary><span><strong>Impacto por horário</strong><small>Compare a concentração operacional entre dois horários</small></span><span class="details-toggle">Expandir</span></summary><article class="panel hour-impact-panel"><div class="panel-title hour-impact-heading"><div><p class="eyebrow" data-edit-id="heatmap-eyebrow">Análise comparativa</p><h3 data-edit-id="heatmap-title">Impacto por horário</h3></div><div class="hour-compare-filters"><label>Horário A<select id="compareHourA"><option value="06h">06h</option><option value="08h">08h</option><option value="10h">10h</option><option value="12h">12h</option><option value="14h">14h</option><option value="16h">16h</option><option value="18h" selected>18h</option><option value="20h">20h</option><option value="22h">22h</option></select></label><label>Horário B<select id="compareHourB"><option value="06h">06h</option><option value="08h">08h</option><option value="10h">10h</option><option value="12h">12h</option><option value="14h">14h</option><option value="16h">16h</option><option value="18h">18h</option><option value="20h" selected>20h</option><option value="22h">22h</option></select></label></div></div><div class="hour-heatmap" id="hourHeatmap"></div></article></details>
       </section>
     </main>
       </div>
@@ -97,6 +97,7 @@
           </div>
           <label><span data-edit-id="label-stations">Estações envolvidas</span><input name="estacoes" placeholder="SEP, PDZ, HIG" /></label>
           <label><span data-edit-id="label-audience">Público estimado</span><input name="publico" placeholder="Ex.: 35000 ou Não divulgado" /></label>
+          <label><span>Link sobre o evento</span><input name="link" type="url" placeholder="https://www.exemplo.com/evento" /></label>
           <div class="event-image-field">
             <span>Imagem do evento</span>
             <label class="file-button event-image-selector"><span>Selecionar imagem</span><input id="eventImageInput" type="file" accept="image/jpeg,image/png,image/webp" /></label>
@@ -175,10 +176,10 @@
       </form>
     </section>
     <section class="image-modal" id="eventImageModal" aria-hidden="true">
-      <button class="image-modal-backdrop" type="button" data-image-close="true" aria-label="Fechar imagem"></button>
-      <div class="image-modal-panel" role="dialog" aria-modal="true" aria-labelledby="eventImageModalTitle">
-        <div class="image-modal-header"><h2 id="eventImageModalTitle">Imagem do evento</h2><button class="icon-button" id="closeEventImageModal" type="button" aria-label="Fechar">×</button></div>
-        <img id="eventImageModalImg" alt="" />
+      <button class="image-modal-backdrop" type="button" data-image-close="true" aria-label="Fechar detalhes"></button>
+      <div class="image-modal-panel event-detail-panel" role="dialog" aria-modal="true" aria-labelledby="eventImageModalTitle">
+        <div class="image-modal-header"><div><p class="eyebrow">Detalhes do evento</p><h2 id="eventImageModalTitle">Evento</h2></div><button class="icon-button" id="closeEventImageModal" type="button" aria-label="Fechar">×</button></div>
+        <div class="event-detail-body"><div class="event-detail-media"><img id="eventImageModalImg" alt="" /></div><div class="event-detail-content"><p id="eventDetailSchedule"></p><strong id="eventDetailLocation"></strong><div class="event-detail-badges" id="eventDetailBadges"></div><a class="primary-button event-detail-map" id="eventGoogleMaps" target="_blank" rel="noopener noreferrer">Abrir no Google Maps</a><label>Link sobre o evento<input id="eventExternalLink" type="url" placeholder="Cole ou consulte o link do evento" /></label><a class="ghost-button wide event-detail-link disabled" id="openEventExternalLink" target="_blank" rel="noopener noreferrer" aria-disabled="true">Abrir link do evento</a></div></div>
       </div>
     </section>
     <section class="password-modal" id="reportRecipientModal" aria-hidden="true">
@@ -192,6 +193,6 @@
       </form>
     </section>
     <script src="./assets/events-data.js?v=20260721-capas"></script>
-    <script src="./app.js?v=20260721-publico-1"></script>
+    <script src="./app.js?v=20260721-publico-3"></script>
   </body>
 </html>

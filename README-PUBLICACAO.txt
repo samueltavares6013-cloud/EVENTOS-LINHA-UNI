@@ -13,5 +13,7 @@ ATUALIZAÇÕES
 Os eventos e as capas oficiais estão em assets/events-data.js.
 Quando houver alterações, gere novamente esse arquivo na versão administrativa e substitua-o na versão publicada.
 LIMITAÇÕES
-Esta versão não possui backend, banco de dados ou edição pública.
-As funções de consulta, filtros, calendário, dashboard, capas e exportação de PDF funcionam no navegador.
+Esta versão não possui backend nem banco de dados compartilhado.
+As funções de consulta, filtros, calendário, dashboard, relatório de campo, capas, administração local e exportação de PDF funcionam no navegador.
+Alterações administrativas ficam salvas somente no navegador em que foram realizadas e não modificam o site dos outros usuários.
+Na V3, os cards abrem detalhes com Google Maps e link externo, o dashboard compara horários e os meses aparecem por sigla.
