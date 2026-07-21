@@ -534,14 +534,20 @@ function countEventTypes(source) {
   }, { shows: 0, jogos: 0, manifestacoes: 0, universitarios: 0, outros: 0 });
 }
 function eventHourSlot(event) {
-  const hour = Number(String(event.inicio || "").slice(0, 2));
-  if (!Number.isFinite(hour)) return "18h";
+  const value = String(event.inicio || "").trim();
+  const match = value.match(/^(\d{1,2})(?::\d{2})?/);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return null;
   return dashboardHours.reduce((best, slot) => Math.abs(Number(slot.slice(0, 2)) - hour) < Math.abs(Number(best.slice(0, 2)) - hour) ? slot : best, dashboardHours[0]);
 }
 function calculatePeakHour(source) {
   const counts = dashboardHours.reduce((acc, hour) => ({ ...acc, [hour]: 0 }), {});
-  source.forEach((event) => counts[eventHourSlot(event)] += 1);
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "--";
+  source.forEach((event) => {
+    const slot = eventHourSlot(event);
+    if (slot) counts[slot] += 1;
+  });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).find(([, total]) => total > 0)?.[0] || "--";
 }
 function renderHeatmap(source) {
   const target = document.querySelector("#stationHeatmap");
@@ -660,23 +666,68 @@ function renderHourHeatmap(source) {
   if (!target) return;
   const stationSelect = document.querySelector("#compareStation");
   if (stationSelect && stationSelect.options.length === 1) stationSelect.insertAdjacentHTML("beforeend", lineStations.map((station) => `<option value="${station.code}">${station.code} | ${station.name}</option>`).join(""));
-  const selectedDate = document.querySelector("#compareDate")?.value || "";
+  const selectedStart = document.querySelector("#compareStartDate")?.value || "";
+  const selectedEnd = document.querySelector("#compareEndDate")?.value || "";
   const selectedStation = stationSelect?.value || "";
-  const filteredSource = source.filter((event) => (!selectedDate || event.data === selectedDate) && (!selectedStation || (event.estacoes || []).map(normalizeStationCode).includes(selectedStation)));
-  const counts = dashboardHours.reduce((acc, hour) => ({ ...acc, [hour]: 0 }), {});
-  filteredSource.forEach((event) => counts[eventHourSlot(event)] += 1);
-  const activeHours = dashboardHours.map((hour) => ({ hour, total: counts[hour] })).filter((item) => item.total > 0);
   const status = document.querySelector("#hourCompareStatus");
   const stationName = selectedStation ? `${selectedStation} | ${lineStations.find((station) => station.code === selectedStation)?.name || selectedStation}` : "Todas as estações";
-  if (status) status.textContent = `${selectedDate ? formatDate(selectedDate) : "Todos os dias"} | ${stationName}`;
-  if (!activeHours.length) {
-    target.innerHTML = `<div class="hour-empty-state"><strong>Nenhum evento encontrado</strong><span>Não há eventos para a data e a estação selecionadas.</span></div>`;
+  if (selectedStart && selectedEnd && selectedStart > selectedEnd) {
+    if (status) status.textContent = `${formatDate(selectedStart)} a ${formatDate(selectedEnd)} | ${stationName}`;
+    target.innerHTML = `<div class="hour-empty-state"><strong>Período inválido</strong><span>A data final deve ser igual ou posterior à data inicial.</span></div>`;
     return;
   }
-  const max = Math.max(...activeHours.map((item) => item.total));
-  const min = Math.min(...activeHours.map((item) => item.total));
-  const peak = activeHours.find((item) => item.total === max);
-  target.innerHTML = `<div class="hour-volume-summary"><div><span>Total do dia</span><strong>${formatAudience(filteredSource.length)}</strong></div><div><span>Maior volume</span><strong>${peak.hour}</strong></div><div><span>Horários ativos</span><strong>${activeHours.length}</strong></div><div><span>Diferença</span><strong>${formatAudience(max - min)}</strong></div></div><div class="hour-volume-chart">${activeHours.map((item) => `<div class="hour-volume-row"><strong>${item.hour}</strong><div class="hour-volume-track"><i style="width:${Math.max(8, (item.total / max) * 100)}%"></i></div><span>${item.total} ${item.total === 1 ? "evento" : "eventos"}</span></div>`).join("")}</div>`;
+  const matchesStation = (event) => !selectedStation || (event.estacoes || []).map(normalizeStationCode).includes(selectedStation);
+  const currentSource = source.filter((event) => matchesStation(event) && (!selectedStart || event.data >= selectedStart) && (!selectedEnd || event.data <= selectedEnd));
+  const comparisonReady = !!selectedStart && !!selectedEnd;
+  let previousSource = [];
+  let previousStart = "";
+  let previousEnd = "";
+  if (comparisonReady) {
+    const startDate = parseDate(selectedStart);
+    const endDate = parseDate(selectedEnd);
+    const duration = Math.round((endDate - startDate) / 86400000) + 1;
+    const previousEndDate = new Date(startDate);
+    previousEndDate.setDate(previousEndDate.getDate() - 1);
+    const previousStartDate = new Date(previousEndDate);
+    previousStartDate.setDate(previousStartDate.getDate() - duration + 1);
+    const toInputDate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    previousStart = toInputDate(previousStartDate);
+    previousEnd = toInputDate(previousEndDate);
+    previousSource = source.filter((event) => matchesStation(event) && event.data >= previousStart && event.data <= previousEnd);
+  }
+  const hourLabels = [...dashboardHours, "Não informado"];
+  const countByHour = (items) => items.reduce((counts, event) => {
+    const slot = eventHourSlot(event) || "Não informado";
+    counts[slot] += 1;
+    return counts;
+  }, hourLabels.reduce((counts, hour) => ({ ...counts, [hour]: 0 }), {}));
+  const currentCounts = countByHour(currentSource);
+  const previousCounts = countByHour(previousSource);
+  const activeHours = hourLabels.map((hour) => ({ hour, current: currentCounts[hour], previous: previousCounts[hour] })).filter((item) => item.current > 0 || item.previous > 0);
+  const periodLabel = selectedStart || selectedEnd ? `${selectedStart ? formatDate(selectedStart) : "Início"} a ${selectedEnd ? formatDate(selectedEnd) : "Hoje"}` : "Todos os dias";
+  if (status) status.textContent = `${periodLabel} | ${stationName}`;
+  if (!currentSource.length) {
+    target.innerHTML = `<div class="hour-empty-state"><strong>Nenhum evento encontrado</strong><span>Não há eventos no período e na estação selecionados.</span></div>`;
+    return;
+  }
+  const knownHours = dashboardHours.map((hour) => ({ hour, total: currentCounts[hour] })).filter((item) => item.total > 0);
+  const peak = knownHours.sort((a, b) => b.total - a.total)[0] || { hour: "--", total: 0 };
+  const peakConcentration = currentSource.length ? Math.round((peak.total / currentSource.length) * 100) : 0;
+  const criticalAtPeak = peak.hour === "--" ? 0 : currentSource.filter((event) => eventHourSlot(event) === peak.hour && displayImpact(event.impacto) === "ALTO").length;
+  const stationCounts = currentSource.reduce((counts, event) => {
+    (event.estacoes || []).map(normalizeStationCode).forEach((code) => counts[code] = (counts[code] || 0) + 1);
+    return counts;
+  }, {});
+  const topStation = selectedStation || Object.entries(stationCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "--";
+  const chartMax = Math.max(1, ...activeHours.flatMap((item) => [item.current, item.previous]));
+  let insight = "Selecione a data inicial e a data final para comparar com o período anterior.";
+  if (comparisonReady && previousSource.length) {
+    const variation = Math.round(((currentSource.length - previousSource.length) / previousSource.length) * 100);
+    const movement = variation > 0 ? `aumento de ${variation}%` : variation < 0 ? `redução de ${Math.abs(variation)}%` : "estabilidade";
+    const peakMessage = peak.hour === "--" ? "sem horário de pico informado" : `com maior concentração às ${peak.hour}`;
+    insight = `O período apresentou ${movement} no volume de eventos em relação ao período anterior, ${peakMessage}.`;
+  } else if (comparisonReady) insight = `O período anterior, de ${formatDate(previousStart)} a ${formatDate(previousEnd)}, não possui eventos para calcular a variação percentual.`;
+  target.innerHTML = `<div class="hour-volume-summary executive"><div><span>Total de eventos</span><strong>${formatAudience(currentSource.length)}</strong></div><div><span>Horário de pico</span><strong>${peak.hour}</strong></div><div><span>Concentração no pico</span><strong>${peakConcentration}%</strong></div><div><span>Críticos no pico</span><strong>${criticalAtPeak}</strong></div><div><span>Estação com maior volume</span><strong>${topStation}</strong></div></div><div class="hour-period-legend"><span><i class="current"></i>Período selecionado</span>${comparisonReady ? `<span><i class="previous"></i>Período anterior (${formatDate(previousStart)} a ${formatDate(previousEnd)})</span>` : ""}</div><div class="hour-volume-chart comparative">${activeHours.map((item) => `<div class="hour-volume-row comparative"><strong>${item.hour}</strong><div class="hour-volume-bars"><div><span>Selecionado</span><div class="hour-volume-track"><i class="current" style="width:${item.current ? Math.max(6, (item.current / chartMax) * 100) : 0}%"></i></div><b>${item.current}</b></div>${comparisonReady ? `<div><span>Anterior</span><div class="hour-volume-track"><i class="previous" style="width:${item.previous ? Math.max(6, (item.previous / chartMax) * 100) : 0}%"></i></div><b>${item.previous}</b></div>` : ""}</div></div>`).join("")}</div><p class="hour-executive-insight">${insight}</p>`;
 }
 function renderEventDistribution(source) {
   const legend = document.querySelector("#eventDistribution");
@@ -1356,7 +1407,7 @@ document.querySelectorAll("[data-volume-mode]").forEach((button) => button.addEv
   renderEventVolume(getDashboardEvents());
 }));
 ["#dashboardSearch", "#dashboardCategory", "#dashboardStation", "#dashboardImpact"].forEach((selector) => document.querySelector(selector).addEventListener("input", render));
-["#compareDate", "#compareStation"].forEach((selector) => document.querySelector(selector).addEventListener("change", () => renderHourHeatmap(getDashboardEvents())));
+["#compareStartDate", "#compareEndDate", "#compareStation"].forEach((selector) => document.querySelector(selector).addEventListener("change", () => renderHourHeatmap(getDashboardEvents())));
 document.querySelector("#importJson").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;

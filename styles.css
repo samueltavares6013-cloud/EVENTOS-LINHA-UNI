@@ -1695,6 +1695,9 @@ body.image-modal-open {
   border-radius: 6px;
   background: #f7f9fc;
 }
+.hour-volume-summary.executive {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
 .hour-volume-summary div {
   padding: 14px 16px;
   border-left: 1px solid var(--line);
@@ -1745,6 +1748,76 @@ body.image-modal-open {
   border-radius: inherit;
   background: var(--navy-3);
 }
+.hour-period-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.hour-period-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.hour-period-legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.hour-period-legend i.current,
+.hour-volume-track i.current {
+  background: var(--navy-3);
+}
+.hour-period-legend i.previous,
+.hour-volume-track i.previous {
+  background: #94a3b8;
+}
+.hour-volume-chart.comparative {
+  gap: 0;
+}
+.hour-volume-row.comparative {
+  grid-template-columns: 110px minmax(0, 1fr);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.hour-volume-row.comparative:last-child {
+  border-bottom: 0;
+}
+.hour-volume-bars {
+  display: grid;
+  gap: 7px;
+}
+.hour-volume-bars > div {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 34px;
+  gap: 9px;
+  align-items: center;
+}
+.hour-volume-bars span,
+.hour-volume-bars b {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.hour-volume-bars b {
+  color: var(--navy);
+  text-align: right;
+}
+.hour-volume-bars .hour-volume-track {
+  height: 18px;
+}
+.hour-executive-insight {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+  border-left: 4px solid var(--navy-3);
+  background: #f4f7fb;
+}
 .hour-empty-state {
   display: grid;
   justify-items: center;
@@ -1770,7 +1843,7 @@ body.image-modal-open {
 }
 .hour-compare-filters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, minmax(155px, 1fr));
   gap: 12px;
 }
 .hour-compare-filters label {
@@ -2465,6 +2538,16 @@ body.image-modal-open {
   .hour-volume-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .hour-volume-summary.executive {
+    grid-template-columns: 1fr;
+  }
+  .hour-volume-summary.executive div {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .hour-volume-summary.executive div:first-child {
+    border-top: 0;
+  }
   .hour-volume-summary div:nth-child(3) {
     border-left: 0;
     border-top: 1px solid var(--line);
@@ -2475,6 +2558,14 @@ body.image-modal-open {
   .hour-volume-row {
     grid-template-columns: 42px minmax(0, 1fr) 76px;
     gap: 8px;
+  }
+  .hour-volume-row.comparative {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .hour-volume-bars > div {
+    grid-template-columns: 64px minmax(0, 1fr) 28px;
+    gap: 7px;
   }
   .calendar-tools input,
   .calendar-tools select,
