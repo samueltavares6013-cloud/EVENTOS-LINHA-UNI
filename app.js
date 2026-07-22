@@ -225,6 +225,18 @@ function monthLabel(value) {
   const date = parseDate(value);
   return date ? monthFormatter.format(date).toUpperCase() : "SEM DATA";
 }
+function compactPeriodLabel(startValue, endValue, fallback = "Período selecionado") {
+  const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+  const start = parseDate(startValue);
+  const end = parseDate(endValue);
+  const compactDate = (date) => date ? `${months[date.getMonth()]}/${date.getFullYear()}` : "";
+  if (start && end) {
+    if (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth()) return compactDate(start);
+    if (start.getFullYear() === end.getFullYear()) return `${months[start.getMonth()]}–${months[end.getMonth()]}/${start.getFullYear()}`;
+    return `${compactDate(start)}–${compactDate(end)}`;
+  }
+  return compactDate(start || end) || fallback;
+}
 function formatAudience(value) {
   const audience = Number(value);
   return numberFormatter.format(Number.isFinite(audience) ? audience : 0);
@@ -720,6 +732,8 @@ function renderHourHeatmap(source) {
   }, {});
   const topStation = selectedStation || Object.entries(stationCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "--";
   const chartMax = Math.max(1, ...activeHours.flatMap((item) => [item.current, item.previous]));
+  const currentPeriodName = compactPeriodLabel(selectedStart, selectedEnd);
+  const previousPeriodName = compactPeriodLabel(previousStart, previousEnd, "Período anterior");
   let insight = "Selecione a data inicial e a data final para comparar com o período anterior.";
   if (comparisonReady && previousSource.length) {
     const variation = Math.round(((currentSource.length - previousSource.length) / previousSource.length) * 100);
@@ -727,7 +741,7 @@ function renderHourHeatmap(source) {
     const peakMessage = peak.hour === "--" ? "sem horário de pico informado" : `com maior concentração às ${peak.hour}`;
     insight = `O período apresentou ${movement} no volume de eventos em relação ao período anterior, ${peakMessage}.`;
   } else if (comparisonReady) insight = `O período anterior, de ${formatDate(previousStart)} a ${formatDate(previousEnd)}, não possui eventos para calcular a variação percentual.`;
-  target.innerHTML = `<div class="hour-volume-summary executive"><div><span>Total de eventos</span><strong>${formatAudience(currentSource.length)}</strong></div><div><span>Horário de pico</span><strong>${peak.hour}</strong></div><div><span>Concentração no pico</span><strong>${peakConcentration}%</strong></div><div><span>Críticos no pico</span><strong>${criticalAtPeak}</strong></div><div><span>Estação com maior volume</span><strong>${topStation}</strong></div></div><div class="hour-period-legend"><span><i class="current"></i>Período selecionado</span>${comparisonReady ? `<span><i class="previous"></i>Período anterior (${formatDate(previousStart)} a ${formatDate(previousEnd)})</span>` : ""}</div><div class="hour-volume-chart comparative">${activeHours.map((item) => `<div class="hour-volume-row comparative"><strong>${item.hour}</strong><div class="hour-volume-bars"><div><span>Selecionado</span><div class="hour-volume-track"><i class="current" style="width:${item.current ? Math.max(6, (item.current / chartMax) * 100) : 0}%"></i></div><b>${item.current}</b></div>${comparisonReady ? `<div><span>Anterior</span><div class="hour-volume-track"><i class="previous" style="width:${item.previous ? Math.max(6, (item.previous / chartMax) * 100) : 0}%"></i></div><b>${item.previous}</b></div>` : ""}</div></div>`).join("")}</div><p class="hour-executive-insight">${insight}</p>`;
+  target.innerHTML = `<div class="hour-volume-summary executive"><div><span>Total de eventos</span><strong>${formatAudience(currentSource.length)}</strong></div><div><span>Horário de pico</span><strong>${peak.hour}</strong></div><div><span>Concentração no pico</span><strong>${peakConcentration}%</strong></div><div><span>Críticos no pico</span><strong>${criticalAtPeak}</strong></div><div><span>Estação com maior volume</span><strong>${topStation}</strong></div></div><div class="hour-period-legend"><span><i class="current"></i>${currentPeriodName}</span>${comparisonReady ? `<span><i class="previous"></i>${previousPeriodName} (${formatDate(previousStart)} a ${formatDate(previousEnd)})</span>` : ""}</div><div class="hour-volume-chart comparative">${activeHours.map((item) => `<div class="hour-volume-row comparative"><strong>${item.hour}</strong><div class="hour-volume-bars"><div><span>${currentPeriodName}</span><div class="hour-volume-track"><i class="current" style="width:${item.current ? Math.max(6, (item.current / chartMax) * 100) : 0}%"></i></div><b>${item.current}</b></div>${comparisonReady ? `<div><span>${previousPeriodName}</span><div class="hour-volume-track"><i class="previous" style="width:${item.previous ? Math.max(6, (item.previous / chartMax) * 100) : 0}%"></i></div><b>${item.previous}</b></div>` : ""}</div></div>`).join("")}</div><p class="hour-executive-insight">${insight}</p>`;
 }
 function renderEventDistribution(source) {
   const legend = document.querySelector("#eventDistribution");

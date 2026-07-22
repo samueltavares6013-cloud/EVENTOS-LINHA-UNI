@@ -1792,7 +1792,7 @@ body.image-modal-open {
 }
 .hour-volume-bars > div {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) 34px;
+  grid-template-columns: 112px minmax(0, 1fr) 34px;
   gap: 9px;
   align-items: center;
 }
@@ -1800,6 +1800,9 @@ body.image-modal-open {
 .hour-volume-bars b {
   color: var(--muted);
   font-size: 0.7rem;
+}
+.hour-volume-bars span {
+  white-space: nowrap;
 }
 .hour-volume-bars b {
   color: var(--navy);
@@ -2564,7 +2567,7 @@ body.image-modal-open {
     gap: 8px;
   }
   .hour-volume-bars > div {
-    grid-template-columns: 64px minmax(0, 1fr) 28px;
+    grid-template-columns: 92px minmax(0, 1fr) 28px;
     gap: 7px;
   }
   .calendar-tools input,
