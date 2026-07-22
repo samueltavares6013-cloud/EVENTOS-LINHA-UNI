@@ -533,6 +533,7 @@ select:focus {
   gap: 10px;
   min-height: 162px;
   padding: 14px;
+  background: #fff7ed;
 }
 .date-box {
   display: grid;
