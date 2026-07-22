@@ -21,3 +21,4 @@ Na V4, o gráfico mensal mostra mês/ano, a comparação cruza dia, estação e 
 Na V5, a análise seleciona data e estação e compara automaticamente todos os horários com eventos; os botões de links usam laranja com texto branco e todos os fechamentos usam X preto.
 Na V6, o comparativo executivo usa data inicial, data final e estação, compara o período anterior equivalente e separa horários não informados.
 Na V7, as barras e a legenda identificam automaticamente o mês/ano ou o intervalo de meses analisado.
+Na V8, o calendário exibe dois cards de eventos por linha no desktop e tablet e um card por linha no celular.
