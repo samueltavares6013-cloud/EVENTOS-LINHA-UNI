@@ -23,3 +23,4 @@ Na V6, o comparativo executivo usa data inicial, data final e estação, compara
 Na V7, as barras e a legenda identificam automaticamente o mês/ano ou o intervalo de meses analisado.
 Na V8, o calendário exibe dois cards de eventos por linha no desktop e tablet e um card por linha no celular.
 Na V9, a área textual dos cards usa um fundo laranja muito claro para destacar as informações sem prejudicar a leitura.
+Na V10, o menu inclui um manual de instruções em PDF com orientações de consulta, operação e administração do site.

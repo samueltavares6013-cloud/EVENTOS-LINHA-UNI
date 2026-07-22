@@ -82,6 +82,7 @@ body {
   color: #b7c7dc;
   background: transparent;
   cursor: pointer;
+  text-decoration: none;
   text-align: left;
 }
 .side-link.active,
