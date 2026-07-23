@@ -1,0 +1,17 @@
+CONFIGURAÇÃO DO ENVIO DIRETO DE RELATÓRIOS
+O site já está preparado para enviar o PDF diretamente pelo Microsoft 365, sem abrir a janela de compartilhamento do Windows.
+DADOS NECESSÁRIOS
+Solicite à equipe de TI o ID do diretório (tenant ID) e o ID do aplicativo (client ID) de um aplicativo SPA registrado no Microsoft Entra.
+CONFIGURAÇÃO NO MICROSOFT ENTRA
+1. Registre um aplicativo chamado CIS Eventos Linha 6.
+2. Em Autenticação, adicione a plataforma Aplicativo de página única (SPA).
+3. Cadastre o endereço publicado: https://samueltavares6013-cloud.github.io/EVENTOS-LINHA-UNI/
+4. Para testes locais, cadastre também: http://127.0.0.1:8802/index.html
+5. Em Permissões de API, adicione Microsoft Graph > Permissões delegadas > Mail.Send.
+6. Conceda o consentimento administrativo, caso a política da empresa exija.
+CONFIGURAÇÃO NO SITE
+Abra assets/microsoft365-config.js e preencha tenantId e clientId com os identificadores fornecidos pela TI.
+O campo redirectUri pode permanecer vazio para usar automaticamente o endereço atual do site.
+Não crie nem coloque client secret neste site. Tenant ID e client ID são identificadores públicos da aplicação SPA.
+COMPORTAMENTO
+Na primeira utilização, a Microsoft solicitará o login corporativo e a autorização. Depois disso, o botão Enviar relatório envia o PDF diretamente para o e-mail @linhauni.com.br informado e salva uma cópia em Itens Enviados da conta autenticada.

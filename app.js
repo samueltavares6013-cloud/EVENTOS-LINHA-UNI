@@ -24,6 +24,7 @@ let eventImageSelectionToken = 0;
 let pendingFieldReport = null;
 let backendSyncReady = false;
 let backendSaveTimer = null;
+let microsoft365Client = null;
 const impactWeight = { ALTO: 3, MÉDIO: 2, MEDIO: 2, BAIXO: 1, "MÃ‰DIO": 2 };
 const numberFormatter = new Intl.NumberFormat("pt-BR");
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -305,7 +306,7 @@ function isAllowedReportEmail(value) {
 function openReportRecipientModal(report) {
   pendingFieldReport = report;
   const modal = document.querySelector("#reportRecipientModal");
-  document.querySelector("#reportRecipientEmail").value = report.emailDestinatario || "";
+  document.querySelector("#reportRecipientEmail").value = report.emailDestinatario || window.CIS_MICROSOFT_365?.reportRecipient || "";
   document.querySelector("#reportRecipientError").textContent = "";
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
@@ -393,19 +394,89 @@ function downloadFieldReportPdf(report, blob = createFieldReportPdf(report)) {
 function exportFieldReport(report) {
   downloadFieldReportPdf(report);
 }
-async function emailFieldReport(report) {
-  const blob = createFieldReportPdf(report);
-  const file = new File([blob], fieldReportFilename(report), { type: "application/pdf" });
-  if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
-    try {
-      await navigator.share({ title: `Relatório de campo | ${report.evento}`, files: [file] });
-      return;
-    } catch (error) {
-      if (error?.name === "AbortError") return;
-    }
+function getMicrosoft365Configuration() {
+  const config = window.CIS_MICROSOFT_365 || {};
+  if (!window.msal?.PublicClientApplication) throw new Error("A autenticação da Microsoft não foi carregada. Verifique a conexão e tente novamente.");
+  if (!String(config.tenantId || "").trim() || !String(config.clientId || "").trim()) throw new Error("O envio direto ainda não está habilitado. Solicite ao administrador a configuração do Microsoft 365.");
+  return config;
+}
+function getMicrosoft365Client() {
+  const config = getMicrosoft365Configuration();
+  if (!microsoft365Client) {
+    microsoft365Client = new window.msal.PublicClientApplication({
+      auth: {
+        clientId: config.clientId,
+        authority: `https://login.microsoftonline.com/${config.tenantId}`,
+        redirectUri: config.redirectUri || `${window.location.origin}${window.location.pathname}`
+      },
+      cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
+    });
   }
-  downloadFieldReportPdf(report, blob);
-  window.alert("O compartilhamento direto não está disponível neste navegador. O PDF foi baixado para ser anexado ao e-mail.");
+  return microsoft365Client;
+}
+async function getMicrosoftGraphToken() {
+  const client = getMicrosoft365Client();
+  const scopes = ["Mail.Send"];
+  let account = client.getAllAccounts()[0];
+  if (!account) {
+    const loginResult = await client.loginPopup({ scopes, prompt: "select_account" });
+    account = loginResult.account;
+  }
+  try {
+    const result = await client.acquireTokenSilent({ account, scopes });
+    return result.accessToken;
+  } catch (error) {
+    const result = await client.acquireTokenPopup({ account, scopes });
+    return result.accessToken;
+  }
+}
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || "").split(",")[1] || "");
+    reader.onerror = () => reject(new Error("Não foi possível preparar o PDF para envio."));
+    reader.readAsDataURL(blob);
+  });
+}
+async function sendFieldReport(report) {
+  const submitButton = document.querySelector("#submitReportRecipient");
+  const errorTarget = document.querySelector("#reportRecipientError");
+  const originalLabel = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = "Enviando...";
+  errorTarget.textContent = "";
+  const blob = createFieldReportPdf(report);
+  try {
+    const accessToken = await getMicrosoftGraphToken();
+    const contentBytes = await blobToBase64(blob);
+    const response = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: {
+          subject: `Relatório de campo | ${report.evento} | ${formatDate(report.dataEvento)}`,
+          body: { contentType: "HTML", content: `<p>Segue o relatório de campo do evento <strong>${escapeHtml(report.evento)}</strong>, realizado em ${formatDate(report.dataEvento)}.</p><p>Supervisor responsável: ${escapeHtml(report.supervisor)}.</p><p>O relatório completo está anexado em PDF.</p>` },
+          toRecipients: [{ emailAddress: { address: report.emailDestinatario } }],
+          attachments: [{ "@odata.type": "#microsoft.graph.fileAttachment", name: fieldReportFilename(report), contentType: "application/pdf", contentBytes }]
+        },
+        saveToSentItems: true
+      })
+    });
+    if (!response.ok) {
+      const details = await response.json().catch(() => ({}));
+      throw new Error(details?.error?.message || `A Microsoft recusou o envio (${response.status}).`);
+    }
+    document.querySelector("#fieldReportStatus").textContent = "Relatório enviado";
+    window.alert(`Relatório enviado para ${report.emailDestinatario}.`);
+    return true;
+  } catch (error) {
+    if (error?.errorCode === "user_cancelled" || error?.name === "BrowserAuthError" && String(error?.message || "").includes("user_cancelled")) errorTarget.textContent = "O login da Microsoft foi cancelado.";
+    else errorTarget.textContent = error?.message || "Não foi possível enviar o relatório. Tente novamente.";
+    return false;
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalLabel;
+  }
 }
 function getFilteredEvents() {
   const query = normalizeText(document.querySelector("#searchInput")?.value);
@@ -1247,16 +1318,8 @@ document.querySelector("#reportRecipientForm").addEventListener("submit", async 
   if (!pendingFieldReport) return;
   const report = { ...pendingFieldReport, emailDestinatario: email, atualizadoEm: new Date().toISOString() };
   if (!storeFieldReport(report)) return;
-  closeReportRecipientModal();
-  await emailFieldReport(report);
-});
-document.querySelector("#exportFieldReportPdf").addEventListener("click", () => {
-  const report = captureFieldReport();
-  if (report) exportFieldReport(report);
-});
-document.querySelector("#emailFieldReport").addEventListener("click", () => {
-  const report = captureFieldReport();
-  if (report) emailFieldReport(report);
+  const sent = await sendFieldReport(report);
+  if (sent) closeReportRecipientModal();
 });
 document.querySelector("#adminOpenEditor").addEventListener("click", () => {
   closeDrawer("admin");

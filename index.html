@@ -41,7 +41,7 @@
             <section class="field-report-section"><h3>Identificação do evento</h3><label>Evento monitorado<select name="eventoId" id="fieldReportEvent" required><option value="">Selecione um evento</option></select></label><div class="field-event-summary" id="fieldEventSummary">Selecione um evento para carregar data, local e estações.</div></section>
             <section class="field-report-section"><h3>Responsável e operação</h3><div class="field-report-grid"><label>Supervisor responsável<input name="supervisor" required placeholder="Nome completo" /></label><label>Início da operação<input name="inicioOperacao" type="time" /></label><label>Término da operação<input name="terminoOperacao" type="time" /></label><label>Apoio operacional em campo<input name="apoioOperacional" type="number" min="0" step="1" placeholder="Quantidade de colaboradores" /></label><label>Equipe tática<select name="equipeTatica" required><option value="">Selecione</option><option value="SIM">Sim</option><option value="NÃO">Não</option></select></label></div></section>
             <section class="field-report-section"><h3>Impacto constatado</h3><div class="field-report-grid"><label>Houve impacto?<select name="houveImpacto" id="fieldImpactOccurred" required><option value="">Selecione</option><option value="SIM">Sim</option><option value="NÃO">Não</option></select></label><label>Nível constatado<select name="nivelImpacto" id="fieldImpactLevel"><option value="SEM IMPACTO">Sem impacto</option><option value="BAIXO">Baixo</option><option value="MÉDIO">Médio</option><option value="ALTO">Alto</option></select></label><label>Tipo de impacto<select name="tipoImpacto" id="fieldImpactType"><option value="SEM IMPACTO">Sem impacto</option><option value="FLUXO">Fluxo de passageiros</option><option value="FILA">Formação de filas</option><option value="SEGURANÇA">Segurança</option><option value="TRÂNSITO">Trânsito no entorno</option><option value="OPERAÇÃO">Operação da estação</option><option value="OUTRO">Outro</option></select></label><label>Estações impactadas<input name="estacoesImpactadas" id="fieldImpactedStations" placeholder="Ex.: SEP, PDZ" /></label></div><label>Descrição e providências adotadas<textarea name="descricao" rows="5" required placeholder="Descreva o cenário observado e as ações realizadas"></textarea></label></section>
-            <div class="field-report-actions"><button class="primary-button" type="submit">Salvar relatório</button><button class="ghost-button" id="exportFieldReportPdf" type="button">Exportar PDF</button><button class="ghost-button" id="emailFieldReport" type="button">Enviar por e-mail</button></div>
+            <div class="field-report-actions"><button class="primary-button" id="sendFieldReport" type="submit">Enviar relatório</button></div>
           </form>
         </section>
       </section>
@@ -189,14 +189,16 @@
     <section class="password-modal" id="reportRecipientModal" aria-hidden="true">
       <div class="password-backdrop" data-recipient-close="true"></div>
       <form class="password-panel" id="reportRecipientForm">
-        <div class="drawer-header"><div><p class="eyebrow">Envio protegido</p><h2>Destinatário do relatório</h2></div><button class="icon-button" id="closeReportRecipient" type="button" aria-label="Fechar">×</button></div>
+        <div class="drawer-header"><div><p class="eyebrow">Envio protegido</p><h2>Enviar relatório</h2></div><button class="icon-button" id="closeReportRecipient" type="button" aria-label="Fechar">×</button></div>
         <label>E-mail corporativo<input id="reportRecipientEmail" type="email" autocomplete="email" placeholder="nome@linhauni.com.br" required /></label>
         <p class="recipient-hint">Permitido somente e-mail terminado em @linhauni.com.br.</p>
         <p class="password-error" id="reportRecipientError"></p>
-        <button class="primary-button" type="submit">Salvar e enviar PDF</button>
+        <button class="primary-button" id="submitReportRecipient" type="submit">Enviar relatório</button>
       </form>
     </section>
+    <script src="./assets/msal-browser.min.js?v=2.39.0"></script>
+    <script src="./assets/microsoft365-config.js?v=20260723"></script>
     <script src="./assets/events-data.js?v=20260721-capas"></script>
-    <script src="./app.js?v=20260722-publico-10"></script>
+    <script src="./app.js?v=20260723-envio-direto"></script>
   </body>
 </html>

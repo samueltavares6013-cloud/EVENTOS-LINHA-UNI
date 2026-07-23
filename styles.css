@@ -283,13 +283,10 @@ main {
   color: var(--navy);
 }
 .field-report-actions {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 10px;
+  display: block;
 }
-.field-report-actions .ghost-button {
-  color: var(--navy);
-  background: var(--white);
+.field-report-actions .primary-button {
+  width: 100%;
 }
 .view-panel {
   display: none;
@@ -2459,12 +2456,6 @@ body.image-modal-open {
   .field-report-heading {
     align-items: flex-start;
     flex-direction: column;
-  }
-  .field-report-actions {
-    grid-template-columns: 1fr;
-  }
-  .field-report-actions .ghost-button {
-    width: 100%;
   }
   .command-status,
   .donut-layout {
